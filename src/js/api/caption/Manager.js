@@ -61,8 +61,10 @@ const Manager = function(api, playlistIndex){
                     //that.flushCaptionList(currentCaptionIndex);
 
                     captionLoader.load(track, track.lang, function(vttCues){
-                        if(vttCues && vttCues.length > 0){
-                            let captionId = bindTrack(track, vttCues);
+                        if (vttCues && vttCues.length > 0) {
+                            if (!captionList.find(c => c.file === track.file)) {
+                                let captionId = bindTrack(track, vttCues);
+                            }
                         }
                     }, function(error){
                         let tempError = ERRORS.codes[PLAYER_CAPTION_ERROR];
