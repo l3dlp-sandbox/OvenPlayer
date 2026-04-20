@@ -76,7 +76,7 @@
 
     .stream-info-table th {
       text-align: left;
-      padding-right: 0.75rem;
+      padding-right: 0.25rem;
       font-weight: normal;
     }
 
@@ -258,65 +258,38 @@
           <li class="list-group-item">
             <div class="row">
               <div class="col">
-                <h6>Stream</h6>
-
-
+                <h6>Captured Device</h6>
                 <table class="stream-info-table">
                   <tbody>
                     <tr>
                       <th>
-                        Captured Resolution
-                        <!-- <span
-                          class="badge badge-pill badge-info"
-                          data-mdb-toggle="tooltip"
-                          title="This may be different from the resolution you set. Because the browser will return the ideal resolution from the input device."
-                        >i</span> -->
+                        Video
                       </th>
                       <td>
-                        <span class="me-1">:</span>
-                        <span id="capturedResolutionSpan">-</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>
-                        Captured Framerate
-                      </th>
-                      <td>
-                        <span class="me-1">:</span>
-                        <span id="capturedFrameRateSpan">-</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>
-                        Transmitting Resolution
-                      </th>
-                      <td>
-                        <span class="me-1">:</span>
-                        <span id="transmittingResolutionSpan">-</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>
-                        Transmitting Framerate
-                      </th>
-                      <td>
-                        <span class="me-1">:</span>
-                        <span id="transmittingFrameRateSpan">-</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>
-                        Transmitting Bitrate
-                      </th>
-                      <td>
-                        <span class="me-1">:</span>
-                        <span id="transmittingBitrateSpan">-</span>
+                        <span>:</span>
+                        <span id="capturedInfoSpan">-</span>
                       </td>
                     </tr>
                   </tbody>
                 </table>
-
-
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <h6>Streaming</h6>
+                <table class="stream-info-table">
+                  <tbody id="transmittingInfoTbody">
+                    <tr>
+                      <th>
+                        Transmitting
+                      </th>
+                      <td>
+                        <span>:</span>
+                        <span>-</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
                 <h6>Connection</h6>
                 <fieldset>
                   <div class="mb-2">
@@ -361,13 +334,22 @@
               <div class="col-lg-6 border-start border-2 mb-3 mb-lg-0">
                 <h6>Simulcast</h6>
                 <fieldset>
-                  <label for="numberOfLayersInput">Number of layers</label>
+                  <label for="numberOfLayersInput">
+                    Number of layers
+                    <small>
+                      (Set 2 or more layers to enable simulcast)
+                    </small>
+                  </label>
                   <input
                     id="numberOfLayersInput"
                     type="number"
                     class="form-control mb-2"
-                    placeholder="Not set"
+                    placeholder="Not Set"
                   >
+                  <div
+                    id="simulcastLayersConfig"
+                    style="display: none;"
+                  ></div>
                 </fieldset>
               </div>
 
@@ -388,12 +370,12 @@
                     data-mdb-toggle="tooltip"
                     title="This header value is set automatically when Simulcast is not enabled. If you want to modify this header, please provide the value explicitly."
                   >i</span>
-                  <input
+                  <textarea
                     id="ovenCapabilitiesInput"
-                    type="text"
                     class="form-control mb-2"
                     placeholder="e.g., max_width=1280, max_height=720"
-                  >
+                    rows="6"
+                  ></textarea>
                 </fieldset>
               </div>
             </div>
@@ -409,7 +391,7 @@
           <li class="list-group-item">
             <div class="row">
               <div class="col-lg-6 border-start border-2 mb-3 mb-lg-0">
-                <h6>Video settings</h6>
+                <h6>Capture Video settings</h6>
                 <fieldset>
                   <label for="videoSourceSelect">Device</label>
                   <select
@@ -432,15 +414,6 @@
                     <option value="hd">HD (1280x720)</option>
                     <option value="vga">VGA (640x480)</option>
                   </select>
-
-                  <label for="videoBitrateInput">Bitrate limit (kbps)</label>
-                  <input
-                    id="videoBitrateInput"
-                    type="number"
-                    class="form-control streamingConfigSelect mb-2"
-                    placeholder="Unlimited"
-                  >
-
                   <label for="videoFrameInput">Frame rate</label>
                   <input
                     id="videoFrameInput"
@@ -448,7 +421,9 @@
                     class="form-control constraintSelect mb-2"
                     placeholder="Not Set"
                   >
-
+                </fieldset>
+                <h6>Streaming settings</h6>
+                <fieldset>
                   <label for="videoPreferredCodecSelect">Preferred video codec</label>
                   <select
                     id="videoPreferredCodecSelect"
@@ -461,10 +436,18 @@
                     <option value="H265">H265</option>
                     <option value="VP8">VP8</option>
                   </select>
+
+                  <label for="videoBitrateInput">Bitrate limit (kbps)</label>
+                  <input
+                    id="videoBitrateInput"
+                    type="number"
+                    class="form-control streamingConfigSelect mb-2"
+                    placeholder="Unlimited"
+                  >
                 </fieldset>
               </div>
               <div class="col-lg-6 border-start border-2 mb-3 mb-lg-0">
-                <h6>Audio settings</h6>
+                <h6>Capture Audio settings</h6>
                 <fieldset>
                   <div id="audioSourceSelectArea">
                     <label for="audioSourceSelect">Device</label>
@@ -490,7 +473,7 @@
       <span
         id="ovenLiveKitVersion"
         class="badge badge-info align-middle ms-1"
-      >2026-03-18-2</span>
+      >2026-04-20-1</span>
     </small>
   </div>
 
@@ -651,11 +634,8 @@
     let audioSourceSelect = $('#audioSourceSelect');
     let audioSourceSelectArea = $('#audioSourceSelectArea');
 
-    let capturedResolutionSpan = $('#capturedResolutionSpan');
-    let capturedFrameRateSpan = $('#capturedFrameRateSpan');
-    let transmittingResolutionSpan = $('#transmittingResolutionSpan');
-    let transmittingFrameRateSpan = $('#transmittingFrameRateSpan');
-    let transmittingBitrateSpan = $('#transmittingBitrateSpan');
+    let capturedInfoSpan = $('#capturedInfoSpan');
+    let transmittingInfoTbody = $('#transmittingInfoTbody');
     let iceStateSpan = $('#iceStateSpan');
 
     let testPlaybackButtonArea = $('#testPlaybackButtonArea');
@@ -664,6 +644,7 @@
     let numberOfLayersInput = $('#numberOfLayersInput');
     let bearerTokenInput = $('#bearerTokenInput');
     let ovenCapabilitiesInput = $('#ovenCapabilitiesInput');
+    let simulcastLayersConfigArea = $('#simulcastLayersConfig');
 
     let savedWebRtcUrl = localStorage.getItem('savedWebRtcUrl');
     let savedVideoSource = localStorage.getItem('savedVideoSource');
@@ -675,6 +656,94 @@
     let savedNumberOfLayersInput = localStorage.getItem('savedNumberOfLayersInput');
     let savedBearerToken = localStorage.getItem('savedBearerToken');
 
+    function getSavedSimulcastLayers() {
+      try {
+        return JSON.parse(localStorage.getItem('savedSimulcastLayers')) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveSimulcastLayers() {
+      const layers = [];
+      simulcastLayersConfigArea.find('.simulcast-layer-row').each(function () {
+        layers.push({
+          rid: $(this).find('.layer-rid').val(),
+          scaleResolutionDownBy: $(this).find('.layer-scale').val(),
+          maxFramerate: $(this).find('.layer-framerate').val(),
+          maxBitrate: $(this).find('.layer-bitrate').val()
+        });
+      });
+      localStorage.setItem('savedSimulcastLayers', JSON.stringify(layers));
+    }
+
+    function renderSimulcastLayerRows(count) {
+      simulcastLayersConfigArea.empty();
+      const n = parseInt(count);
+      if (!n || n < 2) {
+        simulcastLayersConfigArea.hide();
+        return;
+      }
+
+      const savedLayers = getSavedSimulcastLayers();
+      const capturedSettings = getCapturedVideoSettings();
+      const defaultFps = capturedSettings && capturedSettings.frameRate ? String(Math.round(capturedSettings.frameRate)) : '';
+      simulcastLayersConfigArea.show();
+
+      for (let i = 0; i < n; i++) {
+        const saved = savedLayers[i] || {};
+        const row = $('<div class="simulcast-layer-row mt-2 p-2 border rounded"></div>')
+          .attr('data-layer-index', i);
+
+        row.append('<small class="d-block fw-bold mb-1">Layer ' + i + '</small>');
+
+        const cols = $('<div class="row g-1"></div>');
+
+        const ridCol = $('<div class="col-3"></div>')
+          .append('<label class="form-label mb-0" style="font-size:0.75rem;">RID</label>')
+          .append(
+            $('<input type="text" class="form-control form-control-sm layer-rid">')
+              .attr('placeholder', i)
+              .val(saved.rid !== undefined && saved.rid !== '' ? saved.rid : String(i))
+          );
+
+        const scaleCol = $('<div class="col-3"></div>')
+          .append('<label class="form-label mb-0" style="font-size:0.75rem;">Scale Down By</label>')
+          .append(
+            $('<input type="number" class="form-control form-control-sm layer-scale" min="1">')
+              .attr('placeholder', 'Not Set')
+              .val(saved.scaleResolutionDownBy !== undefined && saved.scaleResolutionDownBy !== '' ? saved.scaleResolutionDownBy : String(i + 1))
+          );
+
+        const fpsCol = $('<div class="col-3"></div>')
+          .append('<label class="form-label mb-0" style="font-size:0.75rem;">Max Framerate</label>')
+          .append(
+            $('<input type="number" class="form-control form-control-sm layer-framerate" min="1">')
+              .attr('placeholder', defaultFps || 'Not Set')
+              .val(saved.maxFramerate !== undefined && saved.maxFramerate !== '' ? saved.maxFramerate : defaultFps)
+          );
+
+        const bitrateCol = $('<div class="col-3"></div>')
+          .append('<label class="form-label mb-0" style="font-size:0.75rem;">Max Bitrate (kbps)</label>')
+          .append(
+            $('<input type="number" class="form-control form-control-sm layer-bitrate" min="1">')
+              .attr('placeholder', 'Not Set')
+              .val(saved.maxBitrate || '')
+          );
+
+        cols.append(ridCol).append(scaleCol).append(fpsCol).append(bitrateCol);
+        row.append(cols);
+        simulcastLayersConfigArea.append(row);
+      }
+
+      saveSimulcastLayers();
+
+      simulcastLayersConfigArea.find('input').on('change', function () {
+        saveSimulcastLayers();
+        setOvenCapabilitiesHeader();
+      });
+    }
+
     let ovenLiveKitVersion = $('#ovenLiveKitVersion');
     ovenLiveKitVersion.text(OvenLiveKit.getVersion());
 
@@ -684,6 +753,7 @@
 
     if (savedNumberOfLayersInput) {
       numberOfLayersInput.val(savedNumberOfLayersInput);
+      renderSimulcastLayerRows(savedNumberOfLayersInput);
     }
 
     if (savedBearerToken) {
@@ -696,6 +766,9 @@
 
     numberOfLayersInput.on('change', function () {
       localStorage.setItem('savedNumberOfLayersInput', $(this).val());
+      localStorage.removeItem('savedSimulcastLayers');
+      renderSimulcastLayerRows($(this).val());
+      saveSimulcastLayers();
       setOvenCapabilitiesHeader();
     });
 
@@ -710,14 +783,6 @@
         audioSourceSelectArea.hide();
       } else {
         audioSourceSelectArea.show();
-      }
-
-      if ($(this).val() === 'no') {
-
-        enableVideoControl(false);
-      } else {
-
-        enableVideoControl(true);
       }
     });
 
@@ -752,12 +817,6 @@
       webRtcUrlInput.change();
     });
 
-    function enableVideoControl(enable) {
-      videoResolutionSelect.prop('disabled', !enable);
-      videoBitrateLimitInput.prop('disabled', !enable);
-      videoFrameInput.prop('disabled', !enable);
-    }
-
     function normalizeFrameRate(frameRate) {
       if (Number.isInteger(frameRate)) {
         return frameRate;
@@ -765,24 +824,23 @@
       return parseFloat(frameRate).toFixed(2);
     }
 
+    function getCapturedVideoSettings() {
+      if (!input || !input.inputStream) return null;
+      const videoTracks = input.inputStream.getVideoTracks();
+      if (!videoTracks || videoTracks.length !== 1) return null;
+      return videoTracks[0].getSettings();
+    }
+
     function getCapturedResolutionAndFramerate(videoElement) {
+      const settings = getCapturedVideoSettings();
+      if (!settings) return;
 
-      if (input && input.inputStream) {
-
-        const videoTracks = input.inputStream.getVideoTracks();
-
-        if (videoTracks && videoTracks.length === 1) {
-
-          const settings = videoTracks[0].getSettings();
-
-          if (settings.width && settings.height) {
-            capturedResolutionSpan.text(settings.width + 'x' + settings.height);
-          }
-
-          if (settings.frameRate) {
-            capturedFrameRateSpan.text(normalizeFrameRate(settings.frameRate) + 'fps');
-          }
+      if (settings.width && settings.height) {
+        let info = settings.width + 'x' + settings.height;
+        if (settings.frameRate) {
+          info += ' (@' + normalizeFrameRate(settings.frameRate) + 'fps)';
         }
+        capturedInfoSpan.text(info);
       }
     }
 
@@ -941,9 +999,7 @@
 
     function resetTransmittingStats() {
 
-      transmittingResolutionSpan.text('-');
-      transmittingFrameRateSpan.text('-');
-      transmittingBitrateSpan.text('-');
+      transmittingInfoTbody.html('<tr><th>Transmitting</th><td><span class="me-1">:</span><span>-</span></td></tr>');
     }
 
     function resetStatusMessages() {
@@ -953,8 +1009,7 @@
     }
 
     function resetCapturedStats() {
-      capturedResolutionSpan.text('-');
-      capturedFrameRateSpan.text('-');
+      capturedInfoSpan.text('-');
     }
 
     function createInput() {
@@ -1076,37 +1131,61 @@
         return;
       }
 
-      if (numberOfLayersInput.val() && numberOfLayersInput.val() > 1) {
-        ovenCapabilitiesInput.val('');
-        return;
-      }
-
       if (!input) {
         ovenCapabilitiesInput.val('');
         return;
       }
 
-      const inputStream = input.inputStream;
+      const settings = getCapturedVideoSettings();
+      if (!settings) {
+        ovenCapabilitiesInput.val('');
+        return;
+      }
 
-      const videoTracks = inputStream.getVideoTracks();
+      const width = settings.width;
+      const height = settings.height;
+      const frameRate = settings.frameRate;
 
-      if (videoTracks && videoTracks.length === 1) {
+      const layerCount = parseInt(numberOfLayersInput.val());
 
-        for (let i = 0; i < videoTracks.length; i++) {
+      if (layerCount >= 2) {
 
-          const track = videoTracks[i];
-          const settings = track.getSettings();
+        const layers = getSavedSimulcastLayers();
+        const parts = [];
 
-          const width = settings.width;
-          const height = settings.height;
-          const frameRate = settings.frameRate;
+        for (let i = 0; i < layerCount; i++) {
+          const layer = layers[i] || {};
+          const rid = layer.rid;
 
-          if (typeof width === 'number' && typeof height === 'number' && typeof frameRate === 'number') {
-            ovenCapabilitiesInput.val(`max_width=${width}, max_height=${height}, max_fps=${normalizeFrameRate(frameRate)}`);
+          if (!rid) {
+            continue;
+          }
+
+          const scale = layer.scaleResolutionDownBy;
+
+          if (scale) {
+            const scaledWidth = Math.round(width / parseFloat(scale));
+            const scaledHeight = Math.round(height / parseFloat(scale));
+
+            parts.push(`rid:${rid}:max_width=${scaledWidth}`);
+            parts.push(`rid:${rid}:max_height=${scaledHeight}`);
+          }
+
+          const maxFramerate = layer.maxFramerate;
+
+          if (maxFramerate) {
+            const fps = normalizeFrameRate(maxFramerate);
+            parts.push(`rid:${rid}:max_fps=${fps}`);
           }
         }
+
+        ovenCapabilitiesInput.val(parts.join(', '));
+
       } else {
-        ovenCapabilitiesInput.val('');
+
+        if (typeof width === 'number' && typeof height === 'number' && typeof frameRate === 'number') {
+          ovenCapabilitiesInput.val(`max_width=${width}, max_height=${height}, max_fps=${normalizeFrameRate(frameRate)}`);
+        }
       }
 
     }
@@ -1130,19 +1209,33 @@
           connectionConfig.preferredVideoFormat = videoPreferredCodecSelect.val();
         }
 
-        if (!simulcastLayerCount || simulcastLayerCount === 0) {
-          
-          if (maxVideoBitrate) {
-            connectionConfig.maxVideoBitrate = parseInt(maxVideoBitrate);
-          }
+        if (simulcastLayerCount) {
 
-        } else {
-          
-          connectionConfig.simulcast = [];
+          if (simulcastLayerCount > 1) {
 
-          for (let i = 0; i < simulcastLayerCount; i++) {
-            const senderParameters = {};
-            connectionConfig.simulcast.push(senderParameters);
+            connectionConfig.simulcast = [];
+
+            for (let i = 0; i < parseInt(simulcastLayerCount); i++) {
+              const senderParameters = {};
+              const layerRow = simulcastLayersConfigArea.find('.simulcast-layer-row[data-layer-index="' + i + '"]');
+              if (layerRow.length) {
+                const rid = layerRow.find('.layer-rid').val();
+                const scale = layerRow.find('.layer-scale').val();
+                const framerate = layerRow.find('.layer-framerate').val();
+                const bitrate = layerRow.find('.layer-bitrate').val();
+                if (rid) senderParameters.rid = rid;
+                if (scale) senderParameters.scaleResolutionDownBy = parseFloat(scale);
+                if (framerate) senderParameters.maxFramerate = parseFloat(framerate);
+                if (bitrate) senderParameters.maxBitrate = parseInt(bitrate) * 1000;
+              }
+              connectionConfig.simulcast.push(senderParameters);
+            }
+
+          } else {
+
+            if (maxVideoBitrate) {
+              connectionConfig.maxVideoBitrate = parseInt(maxVideoBitrate);
+            }
           }
         }
 
@@ -1238,38 +1331,6 @@
 
     });
 
-    // videoBitrateInput.on('change', function () {
-    //
-    //     if (!input || !input.peerConnection) {
-    //         return;
-    //     }
-    //
-    //     const bandwidth = videoBitrateInput.val();
-    //
-    //     const senders = input.peerConnection.getSenders();
-    //
-    //     _.each(senders, function (sender) {
-    //
-    //         if (sender.track.kind === 'video') {
-    //
-    //             const parameters = sender.getParameters();
-    //             if (!parameters.encodings) {
-    //                 parameters.encodings = [{}];
-    //             }
-    //             if (bandwidth === '') {
-    //                 delete parameters.encodings[0].maxBitrate;
-    //             } else {
-    //                 parameters.encodings[0].maxBitrate = bandwidth * 1000;
-    //             }
-    //             sender.setParameters(parameters)
-    //                 .then(() => {
-    //
-    //                 })
-    //                 .catch(e => console.error(e));
-    //         }
-    //     });
-    // });
-
     let lastReports;
 
     setInterval(function () {
@@ -1280,9 +1341,7 @@
       }
 
       input.peerConnection.getStats().then(reports => {
-        let totalBitrate = 0;
-        let resolutions = [];
-        let framerates = [];
+        let transmittingInfos = [];
 
         reports.forEach(report => {
 
@@ -1292,6 +1351,7 @@
             const bytes = report.bytesSent;
             const headerBytes = report.headerBytesSent || 0;
 
+            let reportBitrate = null;
             if (lastReports && lastReports.has(report.id)) {
               const lastReport = lastReports.get(report.id);
               const deltaTimestamp = now - lastReport.timestamp;
@@ -1303,34 +1363,32 @@
                 const bitrate = (8 * deltaBytes) / deltaTimestamp;
                 const headerrate = (8 * deltaHeaderBytes) / deltaTimestamp;
 
-                totalBitrate += bitrate + headerrate;
+                reportBitrate = bitrate + headerrate;
               }
             }
 
             if (report.frameWidth && report.frameHeight) {
-              let resolutionText = report.frameWidth + 'x' + report.frameHeight;
-              if (report.qualityLimitationReason && report.qualityLimitationReason !== 'none') {
-                resolutionText += ' (Limitation Reason: ' + report.qualityLimitationReason + ')';
+              let infoText = report.frameWidth + 'x' + report.frameHeight;
+              if (report.framesPerSecond) {
+                infoText += ' (@' + report.framesPerSecond + 'fps)';
               }
-              resolutions.push(resolutionText);
-            }
-
-            if (report.framesPerSecond) {
-              framerates.push(report.framesPerSecond + 'fps');
+              if (reportBitrate !== null) {
+                infoText += ' ' + reportBitrate.toFixed(2) + 'kbps';
+              }
+              if (report.qualityLimitationReason && report.qualityLimitationReason !== 'none') {
+                infoText += ' (Limitation: ' + report.qualityLimitationReason + ')';
+              }
+              transmittingInfos.push(infoText);
             }
           }
         });
 
-        if (lastReports) {
-          transmittingBitrateSpan.text(totalBitrate.toFixed(2) + 'kbps');
-        }
-
-        if (resolutions.length > 0) {
-          transmittingResolutionSpan.text(resolutions.join(', '));
-        }
-
-        if (framerates.length > 0) {
-          transmittingFrameRateSpan.text(framerates.join(', '));
+        if (transmittingInfos.length > 0) {
+          const rows = transmittingInfos.map((info, i) => {
+            const label = i === 0 ? 'Transmitting' : '';
+            return '<tr><th>' + label + '</th><td><span class="me-1">:</span><span>' + info + '</span></td></tr>';
+          }).join('');
+          transmittingInfoTbody.html(rows);
         }
 
         lastReports = reports;
@@ -1370,10 +1428,6 @@
 
         if (savedVideoSource && checkDevice(allDevices.videoinput, savedVideoSource)) {
           videoSourceSelect.val(savedVideoSource);
-        }
-
-        if (savedVideoSource === 'no') {
-          enableVideoControl(false);
         }
 
         if (savedVideoSource === 'displayCapture') {
