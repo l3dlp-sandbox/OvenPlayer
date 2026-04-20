@@ -471,9 +471,9 @@
     <small class="ms-auto">
       WebRTC Input Demo
       <span
-        id="ovenLiveKitVersion"
+        id="demoVersionSpan"
         class="badge badge-info align-middle ms-1"
-      >2026-04-20-1</span>
+      ></span>
     </small>
   </div>
 
@@ -564,7 +564,7 @@
                 class=""
                 role="button"
                 target="_blank"
-                href="https://www.linkedin.com/company/airensoft"
+                href="https://www.linkedin.com/company/ovenmedialabs"
               ><i class="fab fa-linkedin-in"></i></a>
             </div>
           </div>
@@ -588,6 +588,18 @@
 
 
   <script>
+
+    const DEMO_VERSION = '2026-04-21-1';
+    $('#demoVersionSpan').text(DEMO_VERSION);
+
+     if (localStorage.getItem('savedDemoVersion') !== DEMO_VERSION) {
+      [ 'savedVideoSource', 'savedVideoResolution', 'savedVideoBitrate',
+        'savedVideoFrame', 'savedAudioSource', 'savedNumberOfLayersInput', 'savedBearerToken',
+        'savedSimulcastLayers'].forEach(function (key) {
+        localStorage.removeItem(key);
+      });
+      localStorage.setItem('savedDemoVersion', DEMO_VERSION);
+    }
 
     let allDevices = null;
 
@@ -712,7 +724,7 @@
           .append(
             $('<input type="number" class="form-control form-control-sm layer-scale" min="1">')
               .attr('placeholder', 'Not Set')
-              .val(saved.scaleResolutionDownBy !== undefined && saved.scaleResolutionDownBy !== '' ? saved.scaleResolutionDownBy : String(i + 1))
+              .val(saved.scaleResolutionDownBy !== undefined && saved.scaleResolutionDownBy !== '' ? saved.scaleResolutionDownBy : String(Math.pow(2, i)))
           );
 
         const fpsCol = $('<div class="col-3"></div>')
@@ -1164,8 +1176,8 @@
           const scale = layer.scaleResolutionDownBy;
 
           if (scale) {
-            const scaledWidth = Math.round(width / parseFloat(scale));
-            const scaledHeight = Math.round(height / parseFloat(scale));
+            const scaledWidth = Math.floor(Math.floor(width / parseFloat(scale)) / 2) * 2;
+            const scaledHeight = Math.floor(Math.floor(height / parseFloat(scale)) / 2) * 2;
 
             parts.push(`rid:${rid}:max_width=${scaledWidth}`);
             parts.push(`rid:${rid}:max_height=${scaledHeight}`);
@@ -1256,7 +1268,7 @@
             httpHeaders = {};
           }
 
-          httpHeaders['Oven-Capabilities'] = ovenCapabilitiesInput.val();
+          httpHeaders['Oven-Capabilities'] = ovenCapabilitiesInput.val().replace(/[\r\n]/g, '');
         }
 
         if (httpHeaders !== null) {
