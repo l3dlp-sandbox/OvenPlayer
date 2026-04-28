@@ -34,6 +34,8 @@ const WebRTCLoader = function (provider,
     let ws = null;
     let wsConnected = false;
 
+    let transportPolicy = getTransportQuery(webSocketUrl);
+
     let mainStream = null;
 
     // used for getting media stream from OME or host peer
@@ -81,6 +83,24 @@ const WebRTCLoader = function (provider,
         }
     })();
 
+    function getTransportQuery(webSocketUrl) {
+
+        try {
+            const url = new URL(webSocketUrl);
+            const transport = url.searchParams.get('transport');
+
+            if (transport === null) {
+                return undefined;
+            }
+
+            const normalized = transport.toLowerCase();
+
+            return normalized;
+
+        } catch (e) {
+            return undefined;
+        }
+    }
 
     function getPeerConnectionById(id) {
 
@@ -257,6 +277,7 @@ const WebRTCLoader = function (provider,
         } else if (iceServers) {
 
             // second priority using ice servers from ome and force using TCP
+
             peerConnectionConfig.iceServers = [];
 
             for (let i = 0; i < iceServers.length; i++) {
@@ -299,8 +320,20 @@ const WebRTCLoader = function (provider,
                 peerConnectionConfig.iceServers.push(regIceServer);
             }
 
-            peerConnectionConfig.iceTransportPolicy = 'relay';
+            // webrtcConfig.iceTransportPolicy has first priority than transport query for iceTransportPolicy because it is more specific setting for player.
+            if (playerConfig.getConfig().webrtcConfig &&
+                playerConfig.getConfig().webrtcConfig.iceTransportPolicy) {
+                peerConnectionConfig.iceTransportPolicy = playerConfig.getConfig().webrtcConfig.iceTransportPolicy;
+            } else {
 
+                let iceTransportPolicy = 'relay';
+
+                if (transportPolicy === 'all') {
+                    iceTransportPolicy = 'all';
+                }
+
+                peerConnectionConfig.iceTransportPolicy = iceTransportPolicy;
+            }
         } else {
 
             // last priority using default ice servers.

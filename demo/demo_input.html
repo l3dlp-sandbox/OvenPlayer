@@ -584,12 +584,12 @@
     integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI="
     crossorigin="anonymous"
   ></script>
-  <script src="https://cdn.jsdelivr.net/npm/ovenlivekit@1.5.5/dist/OvenLiveKit.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ovenlivekit@1.5.6/dist/OvenLiveKit.min.js"></script>
 
 
   <script>
 
-    const DEMO_VERSION = '2026-04-21-1';
+    const DEMO_VERSION = '2026-04-28-1';
     $('#demoVersionSpan').text(DEMO_VERSION);
 
      if (localStorage.getItem('savedDemoVersion') !== DEMO_VERSION) {
@@ -1390,22 +1390,26 @@
               if (report.qualityLimitationReason && report.qualityLimitationReason !== 'none') {
                 infoText += ' (Limitation: ' + report.qualityLimitationReason + ')';
               }
-              transmittingInfos.push(infoText);
+              transmittingInfos.push({ pixels: report.frameWidth * report.frameHeight, rid: report.rid || null, text: infoText });
             }
           }
         });
 
+        transmittingInfos.sort((a, b) =>  b.pixels - a.pixels);
+
         if (transmittingInfos.length > 0) {
+          const isSimulcast = transmittingInfos.length > 1;
           const rows = transmittingInfos.map((info, i) => {
             const label = i === 0 ? 'Transmitting' : '';
-            return '<tr><th>' + label + '</th><td><span class="me-1">:</span><span>' + info + '</span></td></tr>';
+            const ridPrefix = isSimulcast && info.rid ? '[rid:' + info.rid + '] ' : '';
+            return '<tr><th>' + label + '</th><td><span class="me-1">:</span><span>' + ridPrefix + info.text + '</span></td></tr>';
           }).join('');
           transmittingInfoTbody.html(rows);
         }
 
         lastReports = reports;
       });
-    }, 500);
+    }, 1000);
 
 
     // get all devices at the first time
