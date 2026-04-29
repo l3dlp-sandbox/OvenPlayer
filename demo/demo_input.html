@@ -324,7 +324,10 @@
         </div>
       </div>
 
-      <div class="col-12">
+      <div
+        id="whip-setting-area"
+        class="col-12"
+      >
         <ul class="list-group">
           <li class="list-group-item bg-light">
             <h5 class="mb-0 fs-6">WHIP settings</h5>
@@ -592,12 +595,12 @@
     const DEMO_VERSION = '2026-04-28-1';
     $('#demoVersionSpan').text(DEMO_VERSION);
 
-     if (localStorage.getItem('savedDemoVersion') !== DEMO_VERSION) {
-      [ 'savedVideoSource', 'savedVideoResolution', 'savedVideoBitrate',
+    if (localStorage.getItem('savedDemoVersion') !== DEMO_VERSION) {
+      ['savedVideoSource', 'savedVideoResolution', 'savedVideoBitrate',
         'savedVideoFrame', 'savedAudioSource', 'savedNumberOfLayersInput', 'savedBearerToken',
         'savedSimulcastLayers'].forEach(function (key) {
-        localStorage.removeItem(key);
-      });
+          localStorage.removeItem(key);
+        });
       localStorage.setItem('savedDemoVersion', DEMO_VERSION);
     }
 
@@ -751,8 +754,77 @@
       saveSimulcastLayers();
 
       simulcastLayersConfigArea.find('input').on('change', function () {
-        saveSimulcastLayers();
-        setOvenCapabilitiesHeader();
+        if (!streamingStarted) {
+          saveSimulcastLayers();
+          setOvenCapabilitiesHeader();
+        } else {
+          const $input = $(this);
+          (async function () {
+            try {
+              const pc = input && input.peerConnection;
+              if (!pc) return;
+
+              const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
+              if (!sender) return;
+
+              const params = sender.getParameters();
+
+              // Set degradationPreference to 'maintain-framerate' to ensure that changes to maxFramerate are applied correctly.
+              params.degradationPreference = 'maintain-framerate';
+
+              const row = $input.closest('.simulcast-layer-row');
+              const rid = row.find('.layer-rid').val();
+              const scale = row.find('.layer-scale').val();
+              const framerate = row.find('.layer-framerate').val();
+              const bitrate = row.find('.layer-bitrate').val();
+
+              const encoding = params.encodings.find(e => e.rid === rid);
+              if (!encoding) return;
+
+              if (scale) encoding.scaleResolutionDownBy = parseFloat(scale);
+              else delete encoding.scaleResolutionDownBy;
+
+              if (framerate) encoding.maxFramerate = parseFloat(framerate);
+              else delete encoding.maxFramerate;
+
+              if (bitrate) encoding.maxBitrate = parseInt(bitrate) * 1000;
+              else delete encoding.maxBitrate;
+
+              // log changes
+              console.log('Updating encoding parameters for RID', rid, {
+                scaleResolutionDownBy: encoding.scaleResolutionDownBy,
+                maxFramerate: encoding.maxFramerate,
+                maxBitrate: encoding.maxBitrate
+              });
+
+              await sender.setParameters(params);
+
+              // await new Promise(resolve => setTimeout(resolve, 3000));
+
+              // Temporarily nudge encoding framerates (for other RIDs only) by -1 then +1 to ensure setParameters is applied correctly.
+              const nudgeParams = sender.getParameters();
+              nudgeParams.encodings.forEach(enc => {
+                if (enc.rid !== rid && typeof enc.maxFramerate === 'number') enc.maxFramerate -= 1;
+              });
+
+              console.log('Nudging encoding parameters to ensure changes are applied', nudgeParams.encodings);
+              await sender.setParameters(nudgeParams);
+
+              // await new Promise(resolve => setTimeout(resolve, 3000));
+
+              const restoreParams = sender.getParameters();
+              restoreParams.encodings.forEach(enc => {
+                if (enc.rid !== rid && typeof enc.maxFramerate === 'number') enc.maxFramerate += 1;
+              });
+              console.log('Restoring encoding parameters after nudge', restoreParams.encodings);
+              await sender.setParameters(restoreParams);
+
+            } catch (e) {
+              console.error('Failed to update encoding parameters:', e);
+              errorTextSpan.text('Failed to update encoding parameters: ' + (e.message || e.toString()));
+            }
+          })();
+        }
       });
     }
 
@@ -1024,6 +1096,10 @@
       capturedInfoSpan.text('-');
     }
 
+    function resetSimulcastStatus(disabled) {
+      simulcastLayersConfigArea.find('.layer-rid').prop('disabled', !!disabled);
+    }
+
     function createInput() {
 
       if (input) {
@@ -1034,6 +1110,7 @@
       resetCapturedStats();
       resetTransmittingStats();
       resetStatusMessages();
+      resetSimulcastStatus(false);
 
       input = OvenLiveKit.create({
         callbacks: {
@@ -1183,10 +1260,8 @@
             parts.push(`rid:${rid}:max_height=${scaledHeight}`);
           }
 
-          const maxFramerate = layer.maxFramerate;
-
-          if (maxFramerate) {
-            const fps = normalizeFrameRate(maxFramerate);
+          if (frameRate) {
+            const fps = normalizeFrameRate(frameRate);
             parts.push(`rid:${rid}:max_fps=${fps}`);
           }
         }
@@ -1207,6 +1282,7 @@
       streamingStarted = true;
       streamingButton.removeClass('btn-primary').addClass('btn-danger');
       streamingButton.text('STOP');
+      resetSimulcastStatus(true);
 
       resetStatusMessages();
 
@@ -1290,6 +1366,7 @@
       streamingStarted = false;
       streamingButton.removeClass('btn-danger').addClass('btn-primary');
       streamingButton.text('START');
+      resetSimulcastStatus(false);
       testPlaybackButtonArea.hide();
     }
 
@@ -1395,7 +1472,7 @@
           }
         });
 
-        transmittingInfos.sort((a, b) =>  b.pixels - a.pixels);
+        transmittingInfos.sort((a, b) => b.pixels - a.pixels);
 
         if (transmittingInfos.length > 0) {
           const isSimulcast = transmittingInfos.length > 1;
